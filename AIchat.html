@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>こいのまえ｜擬似LINEチャット</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#f88ca4;--ink:#222;--bg:#fff;--bubble:#f5f5f7;--mine:#dff6ec}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans JP",system-ui,-apple-system,sans-serif;background:#fff8fb;color:var(--ink);height:100vh;display:flex;flex-direction:column}
+  header{background:var(--brand);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+  header .title{font-weight:900}
+  header a{color:#fff;text-decoration:none;opacity:.9}
+  .chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#fff}
+  .row{display:flex;gap:8px;align-items:flex-end}
+  .row.ai{justify-content:flex-start}
+  .row.me{justify-content:flex-end}
+  .bubble{max-width:75%;padding:10px 14px;border-radius:16px;line-height:1.6;box-shadow:0 1px 1px rgba(0,0,0,.03)}
+  .ai .bubble{background:var(--bubble);border-top-left-radius:6px}
+  .me .bubble{background:var(--mine);border-top-right-radius:6px}
+  .name{font-size:.75rem;color:#777;margin-left:38px;margin-top:-6px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:#ffd6e2;display:grid;place-items:center;font-weight:900;color:#b4476b}
+  .input{display:flex;gap:8px;padding:10px;border-top:1px solid #eee;background:#fff}
+  input[type=text]{flex:1;padding:12px 14px;border:1px solid #e7e3ea;border-radius:999px;font-size:1rem}
+  button{appearance:none;border:none;border-radius:999px;background:var(--brand);color:#fff;padding:12px 16px;font-size:1rem}
+  .typing{display:inline-flex;gap:4px}
+  .typing i{width:6px;height:6px;border-radius:50%;background:#bbb;animation:blink 1s infinite}
+  .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+  .top-cta{display:flex;gap:10px}
+</style>
+</head>
+<body>
+<header>
+  <span class="title">あかね</span>
+  <nav class="top-cta">
+    <a href="index.html">ホーム</a>
+    <a href="form.html">診断</a>
+  </nav>
+</header>
+
+<main class="chat" id="chat">
+  <div class="row ai">
+    <div class="avatar">あ</div>
+    <div class="bubble">最近どう？テスト終わった？</div>
+  </div>
+  <div class="name">あかね</div>
+</main>
+
+<div class="input">
+  <input id="msg" type="text" placeholder="メッセージを入力…" />
+  <button id="send">送信</button>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const input = document.getElementById('msg');
+const sendBtn = document.getElementById('send');
+
+const fillers = ["うん","なるほど〜","たしかに","それは気になる","ふむ…","え、いいじゃん！"];
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+
+function addMe(text){
+  const row = document.createElement('div'); row.className='row me';
+  const b = document.createElement('div'); b.className='bubble'; b.textContent=text;
+  row.appendChild(b); chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+}
+function addAi(text){
+  const row = document.createElement('div'); row.className='row ai';
+  const av = document.createElement('div'); av.className='avatar'; av.textContent='あ';
+  const b = document.createElement('div'); b.className='bubble'; b.textContent=text;
+  row.appendChild(av); row.appendChild(b); chat.appendChild(row);
+  const nm = document.createElement('div'); nm.className='name'; nm.textContent='あかね';
+  chat.appendChild(nm);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function typing(on=true){
+  if(on){
+    const row = document.createElement('div'); row.className='row ai'; row.dataset.typing='1';
+    row.innerHTML = `<div class="avatar">あ</div><div class="bubble"><span class="typing"><i></i><i></i><i></i></span></div>`;
+    chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
+  }else{
+    const t = chat.querySelector('[data-typing]'); if(t) t.remove();
+  }
+}
+
+function reply(user){
+  const t = user.toLowerCase();
+  // 既読までの“間”
+  typing(true);
+  const delay = 900 + Math.random()*900;
+  setTimeout(()=>{
+    typing(false);
+    let res = rand(fillers);
+    if(t.includes("カフェ")||t.includes("coffee")||t.includes("喫茶")) res = "カフェ行きたい！甘いの食べよ🍰";
+    else if(t.includes("映画")||t.includes("ムービー")) res = "映画いいね、何観たい？";
+    else if(t.includes("ひま")||t.includes("暇")) res = "実は私も…散歩でもする？";
+    else if(t.includes("ごめん")||t.includes("遅れて")) res = "全然大丈夫だよ〜気にしないで！";
+    else if(t.includes("好き")||t.includes("気になってる")) res = "え、ちょっとドキドキする…どうしよう😳";
+    addAi(res);
+  }, delay);
+}
+
+function send(){
+  const text = input.value.trim();
+  if(!text) return;
+  addMe(text);
+  input.value="";
+  reply(text);
+}
+sendBtn.addEventListener('click',send);
+input.addEventListener('keydown',e=>{ if(e.key==="Enter") send(); });
+</script>
+</body>
+</html>

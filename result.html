@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>こいのまえ｜診断結果</title>
+<style>
+  :root{--brand:#f88ca4;--bg:#fff8fb;--ink:#333}
+  body{margin:0;font-family:"Helvetica Neue",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;min-height:100vh}
+  header{background:var(--brand);color:#fff;text-align:center;padding:18px}
+  main{flex:1;max-width:760px;margin:0 auto;padding:28px 16px;text-align:center}
+  .score-label{font-size:1.05rem;color:#666;margin:6px 0 2px}
+  .score-value{font-size:3rem;color:var(--brand);font-weight:900;margin:0 0 22px}
+  .box{background:#fff;border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.08);text-align:left;padding:26px 20px;margin:0 auto;max-width:740px;line-height:1.9}
+  .type{font-weight:800;color:#444;text-align:center;margin-bottom:12px;font-size:1.25rem}
+  .p{margin:0 0 1.1em}
+  .hl{font-weight:700}
+  .cta{position:sticky;bottom:0;background:#fff;border-top:1px solid #eee;display:flex;gap:10px;justify-content:center;padding:12px}
+  .btn{appearance:none;border:none;border-radius:999px;padding:12px 20px;font-size:1rem;cursor:pointer}
+  .primary{background:var(--brand);color:#fff}
+  .secondary{background:#f3f3f3}
+  footer{text-align:center;color:#999;font-size:.85rem;padding:18px}
+</style>
+</head>
+<body>
+<header><h1>診断結果</h1></header>
+<main>
+  <div class="score-label">📊 あなたの恋愛偏差値は</div>
+  <div id="score" class="score-value">--</div>
+
+  <div class="box">
+    <div id="type" class="type">あなたは「—」タイプ</div>
+    <div id="desc" class="p"></div>
+    <div id="note" class="p" style="color:#666"></div>
+  </div>
+</main>
+
+<div class="cta">
+  <button class="btn secondary" onclick="history.back()">戻る</button>
+  <a class="btn primary" href="form.html">もう一度診断する</a>
+</div>
+
+<footer>© 2025 こいのまえ / デモ版</footer>
+
+<script>
+const params = new URLSearchParams(location.search);
+const score = Number(params.get("score")) || 55;
+const type = decodeURIComponent(params.get("type") || "") || "影の共感ナビゲーター";
+const cCount = Number(params.get("c")||0);
+
+document.getElementById("score").textContent = score;
+document.getElementById("type").textContent = `あなたは「${type}」タイプ`;
+
+const copy = {
+  "影の共感ナビゲーター": `
+    あなたは、<span class="hl">他人の感情の微細な変化に気づける人</span>。その優しさは大きな強みです。<br>
+    いっぽうで、<span class="hl">自分の気持ちを後回しにしがち</span>。まずは「今日はこれを伝える」と小さな目標を。<br>
+    次の一歩：<span class="hl">「気になった理由を一言」</span>だけでも言葉にしてみよう。`,
+  "理屈優位の静かな戦略家": `
+    あなたは、<span class="hl">状況整理と準備が得意</span>。相手を尊重する姿勢が好印象です。<br>
+    ただし、<span class="hl">考えすぎてタイミングを逃す</span>ことも。70点でいいから出してみる練習を。<br>
+    次の一歩：<span class="hl">「今週どこかで10分話さない？」</span>と短時間の誘いから。`,
+  "ロマンチスト型リアクター": `
+    あなたは、<span class="hl">感受性が豊かで、心が動いた瞬間に強い</span>タイプ。魅力は“熱量”。<br>
+    ときに、<span class="hl">相手のペースを置き去りにしがち</span>。半歩だけゆっくりを意識。<br>
+    次の一歩：<span class="hl">相手の最近の嬉しかった事</span>を1つ聞いてみよう。`,
+  "感情ジェットブースター": `
+    あなたは、<span class="hl">行動力と素直さ</span>が大きな武器。恋愛の“始動”が得意です。<br>
+    ただ、<span class="hl">早さが誤解を生む</span>ことも。小さな確認を挟むだけで関係は安定。<br>
+    次の一歩：誘う前に<span class="hl">「いま時間大丈夫？」</span>の一言を。`,
+  "迷える子羊": `
+    あなたは、<span class="hl">まだ自分の恋愛スタイルを模索中</span>。それは“弱さ”ではなく“伸びしろ”。<br>
+    まずは、<span class="hl">迷う自分を責めない設計</span>に。安全な練習から始めよう。<br>
+    次の一歩：<span class="hl">気になる話題を一つ</span>、テキストで共有する練習を。`
+};
+document.getElementById("desc").innerHTML = copy[type] || copy["理屈優位の静かな戦略家"];
+if(cCount>=5){
+  document.getElementById("note").innerHTML =
+    "<strong>補足：</strong>「どちらとも言えない」の回答が多めでした。いまは“探している途中”。少しずつ自分の言葉を増やしていきましょう。";
+}
+</script>
+</body>
+</html>

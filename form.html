@@ -4,249 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>こいのまえ｜恋愛偏差値診断</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --brand:#f88ca4; --bg:#fff8fb; --ink:#333; --ink-sub:#666; --card:#fff; --muted:#f2f2f2;
-  }
+  :root{--brand:#f88ca4;--bg:#fff8fb;--ink:#222;--muted:#f1eff4}
   *{box-sizing:border-box}
-  body{margin:0;font-family:"Helvetica Neue",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink)}
-  header{position:sticky;top:0;z-index:10;background:var(--brand);color:#fff;padding:14px 16px;text-align:center}
-  header h1{margin:0;font-size:1.1rem;letter-spacing:.02em}
+  body{margin:0;font-family:"Noto Sans JP",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink)}
+  header{position:sticky;top:0;background:var(--brand);color:#fff;padding:14px 16px;z-index:10}
+  .bar{height:8px;background:rgba(255,255,255,.38);border-radius:999px;overflow:hidden;margin-top:6px}
+  .bar>span{display:block;height:100%;width:0;background:#fff;transition:width .25s}
   main{max-width:760px;margin:0 auto;padding:18px 16px 96px}
-  .progress-wrap{margin:12px 0 16px}
-  .progress-text{font-size:.9rem;color:#fff;opacity:.95}
-  .bar{height:8px;background:rgba(255,255,255,.35);border-radius:999px;overflow:hidden;margin-top:6px}
-  .bar>span{display:block;height:100%;width:0;background:#fff;border-radius:999px;transition:width .25s ease}
-
-  .card{background:var(--card);border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.06);padding:18px}
-  .qhead{font-size:1.05rem;font-weight:700;line-height:1.5;margin:2px 0 14px;color:#222}
+  .card{background:#fff;border-radius:16px;box-shadow:0 6px 16px rgba(0,0,0,.06);padding:18px}
+  .qhead{font-size:1.05rem;font-weight:900;margin:4px 0 12px}
   .choices{display:grid;gap:10px}
-  .choice{
-    width:100%; border:2px solid var(--muted); background:#fafafa; border-radius:14px;
-    padding:14px 16px; font-size:1rem; text-align:left; cursor:pointer; transition:.15s;
-  }
-  .choice[data-val="B"]{border-color:#d0f0e4;background:#eefdf7} /* 行動系はわずかに前向き色 */
-  .choice[data-val="C"]{border-color:#ece9ef;background:#fbf9fe} /* 中立 */
-  .choice:focus-visible{outline:3px solid rgba(248,140,164,.45)}
+  .choice{width:100%;border:2px solid var(--muted);background:#fafafa;border-radius:12px;padding:14px 16px;text-align:left;cursor:pointer;font-size:1rem}
+  .choice[data-val="B"]{background:#eefcf7;border-color:#d8f2e9}
+  .choice[data-val="C"]{background:#fbf9fe;border-color:#ebe7f3}
   .choice.selected{border-color:var(--brand);background:#fff}
-  .choice .tag{font-weight:700;margin-right:.35rem}
-  .kbd{font-size:.8rem;color:#888;margin-left:.4rem}
-
-  .nav{
-    position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #eee;
-    padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between
-  }
-  .btn{appearance:none;border:none;border-radius:999px;padding:14px 18px;font-size:1rem;cursor:pointer}
-  .btn.secondary{background:#f3f3f3;color:#333}
-  .btn.primary{background:var(--brand);color:#fff;opacity:.85}
-  .btn.primary:disabled{opacity:.45;cursor:not-allowed}
-  .btn.primary.ready{opacity:1}
-  .index{font-size:.9rem;color:var(--ink-sub)}
-  .review{margin-top:14px}
-  .review ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-  .review li{background:#fff;border:1px solid #eee;border-radius:10px;padding:8px;text-align:center;font-size:.85rem}
+  .nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #eee;padding:10px 14px;display:flex;gap:10px;justify-content:space-between}
+  .btn{appearance:none;border:none;border-radius:999px;padding:14px 18px;font-size:1rem}
+  .btn.secondary{background:#f3f3f3}
+  .btn.primary{background:#f88ca4;color:#fff;opacity:.9}
+  .btn.primary:disabled{opacity:.45}
   .hint{font-size:.9rem;color:#777;margin-top:10px}
 </style>
 </head>
 <body>
 <header>
-  <div class="progress-wrap">
-    <div class="progress-text"><span id="stepText">Q1 / 10</span></div>
-    <div class="bar"><span id="barFill"></span></div>
-  </div>
-  <h1>恋愛偏差値 診断（全10問）</h1>
+  <div>恋愛偏差値 診断（全10問）</div>
+  <div class="bar"><span id="fill"></span></div>
 </header>
 
 <main>
-  <div class="card" id="card">
+  <div class="card">
     <div class="qhead" id="qhead"></div>
     <div class="choices" id="choices"></div>
-    <div class="hint">ヒント：<kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>で選択、<kbd>←</kbd>/<kbd>→</kbd>で前後に移動できます</div>
-    <div class="review" id="review" hidden>
-      <h3 style="margin:10px 0 8px;font-size:1rem">送信前の最終確認</h3>
-      <ul id="summary"></ul>
-    </div>
+    <div class="hint">ショートカット：<kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>で選択、<kbd>←</kbd>/<kbd>→</kbd>で前後</div>
   </div>
 </main>
 
 <div class="nav">
-  <button class="btn secondary" id="prevBtn">戻る</button>
-  <div class="index" id="idxLabel">Q1/10</div>
-  <button class="btn primary" id="nextBtn" disabled>次へ</button>
+  <button class="btn secondary" id="prev">戻る</button>
+  <div id="step" style="align-self:center;color:#666"></div>
+  <button class="btn primary" id="next" disabled>次へ</button>
 </div>
 
 <script>
-/** 質問定義（A/B/C） */
-const QUESTIONS = [
-  {k:"q1", t:"Q1. 気になる人に対して、最初に浮かぶ感情は？",
-    a:["A. どう思われるか不安で、少し距離を置いてしまう",
-       "B. 話しかけたい気持ちが勝る",
-       "C. 状況による/わからない"]},
-  {k:"q2", t:"Q2. 恋愛で一番大事だと思うものは？",
-    a:["A. 相手との信頼関係や安心感","B. ドキドキやテンションの高まり","C. まだ自分でもよくわからない"]},
-  {k:"q3", t:"Q3. LINEの返信、どのくらい気にする？",
-    a:["A. かなり気になる。何か悪かったかもと考える","B. あまり気にしない。自分のタイミングも大事","C. 相手や状況による"]},
-  {k:"q4", t:"Q4. デートに誘うとしたら？",
-    a:["A. 準備して、相手の好みに合わせて提案したい","B. ノリと勢いで、思いついたら誘う","C. どちらもありだが、まだ勇気が出ない"]},
-  {k:"q5", t:"Q5. 自分は恋愛に向いていると思う？",
-    a:["A. そうでもない。苦手意識がある","B. 割と向いていると思う","C. わからない/経験が少ない"]},
-  {k:"q6", t:"Q6. 好きな人ができたとき、まずするのは？",
-    a:["A. SNSや情報をじっくり調べる","B. すぐに接点を作ってみる","C. 気になるが動き方が決められない"]},
-  {k:"q7", t:"Q7. 理想の関係性は？",
-    a:["A. じっくり信頼を築く安心な関係","B. 刺激的で毎日が楽しい関係","C. まだ理想像がイメージできない"]},
-  {k:"q8", t:"Q8. 好きな人に「好きな人いるの？」と聞かれたら？",
-    a:["A. ごまかす/隠す","B. チャンスだと思って伝える","C. 正解がわからず黙るかも"]},
-  {k:"q9", t:"Q9. 恋愛での自分の強みは？",
-    a:["A. 相手の気持ちを察する力（共感）","B. 想いをまっすぐ伝える力（表現）","C. まだ分からない"]},
-  {k:"q10", t:"Q10. これまでの恋愛経験をどう感じてる？",
-    a:["A. うまくいかず自信は低め","B. 自分なりにチャレンジしてきた","C. 経験が少なくよく分からない"]},
+const Q = [
+  {t:"Q1. 気になる人に対して、最初に浮かぶ感情は？",a:["A. 不安で少し距離を置く","B. 話しかけたい気持ちが勝る","C. 状況による/わからない"]},
+  {t:"Q2. 恋愛で一番大事だと思うものは？",a:["A. 信頼と安心","B. ドキドキと高まり","C. まだ自分でもわからない"]},
+  {t:"Q3. LINEの返信、どのくらい気にする？",a:["A. かなり気になる","B. あまり気にしない","C. 相手や状況による"]},
+  {t:"Q4. デートに誘うとしたら？",a:["A. 準備して好みに合わせる","B. 思いついたら誘う","C. 勇気が出ないかも"]},
+  {t:"Q5. 自分は恋愛に向いていると思う？",a:["A. 苦手意識がある","B. 割と向いている","C. わからない/経験が少ない"]},
+  {t:"Q6. 好きな人ができたとき、まずするのは？",a:["A. 情報をじっくり調べる","B. すぐに接点を作る","C. 動き方が決められない"]},
+  {t:"Q7. 理想の関係性は？",a:["A. じっくり信頼を築く","B. 刺激的で楽しい","C. 理想像がまだない"]},
+  {t:"Q8. 好きな人に『好きな人いるの？』と聞かれたら？",a:["A. ごまかす/隠す","B. 伝える","C. 黙るかも"]},
+  {t:"Q9. 恋愛での自分の強みは？",a:["A. 相手を察する力","B. 想いをまっすぐ伝える力","C. まだ分からない"]},
+  {t:"Q10. これまでの恋愛経験をどう感じてる？",a:["A. 自信は低め","B. チャレンジはしてきた","C. 経験が少なく分からない"]},
 ];
+const KEY="KOI_V3";
+let i=0;
+let ans = (JSON.parse(localStorage.getItem(KEY)||"null")?.answers)||Array(Q.length).fill("");
 
-const STORAGE_KEY="koinomae_answers_v1";
-let idx=0;
-let answers = load() || Array(QUESTIONS.length).fill("");
-
-const els = {
-  head: document.getElementById("qhead"),
-  choices: document.getElementById("choices"),
-  stepText: document.getElementById("stepText"),
-  barFill: document.getElementById("barFill"),
-  idxLabel: document.getElementById("idxLabel"),
-  next: document.getElementById("nextBtn"),
-  prev: document.getElementById("prevBtn"),
-  review: document.getElementById("review"),
-  summary: document.getElementById("summary"),
-};
+const elQ=document.getElementById('qhead');
+const elC=document.getElementById('choices');
+const elNext=document.getElementById('next');
+const elPrev=document.getElementById('prev');
+const elFill=document.getElementById('fill');
+const elStep=document.getElementById('step');
 
 function render(){
-  const q=QUESTIONS[idx];
-  els.head.textContent=q.t;
-  els.choices.innerHTML="";
-  ["A","B","C"].forEach((key,i)=>{
-    const btn=document.createElement("button");
-    btn.type="button";
-    btn.className="choice";
-    btn.dataset.val=key;
-    btn.innerHTML=`<span class="tag">${key}.</span> ${q.a[i]} <span class="kbd">（${i+1}）</span>`;
-    if(answers[idx]===key) btn.classList.add("selected");
-    btn.onclick=()=>select(key);
-    els.choices.appendChild(btn);
+  const q=Q[i];
+  elQ.textContent=q.t; elC.innerHTML="";
+  ["A","B","C"].forEach((k,idx)=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='choice'; b.dataset.val=k;
+    if(ans[i]===k) b.classList.add('selected');
+    b.textContent=`${k}. ${q.a[idx]}`;
+    b.onclick=()=>select(k);
+    elC.appendChild(b);
   });
-
-  // progress
-  els.stepText.textContent=`Q${idx+1} / ${QUESTIONS.length}`;
-  els.idxLabel.textContent=`Q${idx+1}/${QUESTIONS.length}`;
-  const pct=((idx)/QUESTIONS.length)*100;
-  els.barFill.style.width = `${pct}%`;
-
-  // nav
-  els.prev.disabled = idx===0;
-  els.next.textContent = (idx===QUESTIONS.length-1) ? "確認へ" : "次へ";
-  els.next.classList.toggle("ready", !!answers[idx]);
-  els.next.disabled = !answers[idx];
-
-  // review section
-  els.review.hidden = true;
+  elPrev.disabled=i===0;
+  elNext.textContent=(i===Q.length-1)?"チャットへ進む":"次へ";
+  elNext.disabled=!ans[i];
+  elFill.style.width=`${(i/Q.length)*100}%`;
+  elStep.textContent=`Q${i+1}/${Q.length}`;
 }
-
-function select(val){
-  answers[idx]=val;
-  save();
-  render();
-}
-
-function next(){
-  if(!answers[idx]) return;
-  if(idx<QUESTIONS.length-1){
-    idx++; render();
-  }else{
-    // 確認画面
-    showSummary();
-  }
-}
-function prev(){
-  if(idx>0){ idx--; render(); }
-}
-
-function showSummary(){
-  els.review.hidden = false;
-  els.summary.innerHTML="";
-  QUESTIONS.forEach((q,i)=>{
-    const li=document.createElement("li");
-    li.textContent = `${i+1}:${answers[i]||"-"}`;
-    els.summary.appendChild(li);
-  });
-  els.head.textContent="最終確認：この内容で診断しますか？";
-  els.choices.innerHTML="";
-  els.next.textContent="結果を見る";
-  els.next.classList.add("ready");
-  els.next.disabled=false;
-  els.idxLabel.textContent="確認";
-  els.barFill.style.width="100%";
-}
+function select(v){ ans[i]=v; save(); render(); }
+function next(){ if(!ans[i]) return; if(i<Q.length-1){ i++; render(); } else { submit(); } }
+function prev(){ if(i>0){ i--; render(); } }
+function save(){ localStorage.setItem(KEY, JSON.stringify({answers:ans,index:i})); }
 
 function submit(){
-  // A=1, B=2, C=0 → 0-20 → 40-70
+  // A=1 B=2 C=0 → 0-20 → 40-70
   let raw=0, c=0;
-  answers.forEach(v=>{
-    if(v==="A") raw+=1;
-    else if(v==="B") raw+=2;
-    else c++;
-  });
+  ans.forEach(v=>{ if(v==="A") raw+=1; else if(v==="B") raw+=2; else c++; });
   const scaled = 40 + Math.round((raw/20)*30);
-
-  // タイプ判定（簡易：form.htmlのロジックと整合）
-  const map={}; QUESTIONS.forEach((q,i)=>map["q"+(i+1)]=answers[i]);
-  const keysCB=["q1","q4","q6","q8"];
-  let cautious=0, breakthrough=0;
-  keysCB.forEach(k=>{
-    if(map[k]==="A") cautious++;
-    if(map[k]==="B") breakthrough++;
-  });
-
-  let type="理屈優位の静かな戦略家";
-  if(c>=5) type="迷える子羊";
-  else if(breakthrough - cautious >= 2){
-    if(map.q9==="B" || map.q5==="B") type="感情ジェットブースター";
-    else if(map.q2==="B" || map.q7==="B") type="ロマンチスト型リアクター";
-    else type="感情ジェットブースター";
-  }else if(cautious - breakthrough >= 2){
-    if(map.q3==="A" || map.q4==="A" || map.q9==="A") type="影の共感ナビゲーター";
-    else type="理屈優位の静かな戦略家";
-  }else{
-    if((map.q2==="A" && map.q4==="A") || map.q6==="A") type="理屈優位の静かな戦略家";
-    else if(map.q3==="A" || map.q9==="A") type="影の共感ナビゲーター";
-    else if(Math.round((breakthrough/(cautious+breakthrough||1))*100)>=55) type="ロマンチスト型リアクター";
-  }
-
-  const params = new URLSearchParams({
-    score:String(scaled), type:encodeURIComponent(type), c:String(c)
-  });
-  location.href=`result.html?${params.toString()}`;
+  const data = JSON.parse(localStorage.getItem(KEY)||"{}");
+  localStorage.setItem(KEY, JSON.stringify({...data, answers:ans, quiz_raw:raw, quiz_scaled:scaled, cCount:c}));
+  location.href="AIchat.html";
 }
 
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({answers, idx})); }
-function load(){
-  try{ const v=JSON.parse(localStorage.getItem(STORAGE_KEY)||""); return v?.answers || null; }catch(e){return null}
-}
-
-// events
-document.getElementById("nextBtn").addEventListener("click", ()=>{
-  if(els.review.hidden) next(); else submit();
-});
-document.getElementById("prevBtn").addEventListener("click", ()=>{
-  if(els.review.hidden) prev(); else { els.review.hidden=true; render(); }
-});
-window.addEventListener("keydown",(e)=>{
+document.getElementById('next').addEventListener('click',next);
+document.getElementById('prev').addEventListener('click',prev);
+window.addEventListener('keydown',e=>{
   if(["1","2","3"].includes(e.key)){ select(["A","B","C"][Number(e.key)-1]); }
-  if(e.key==="ArrowRight"){ if(!els.review.hidden) submit(); else next(); }
-  if(e.key==="ArrowLeft"){ if(!els.review.hidden) prev(); }
+  if(e.key==="ArrowRight") next();
+  if(e.key==="ArrowLeft") prev();
 });
-
-// 初期化
-// 途中からの再開に備えて、最初に回答した設問へ
-const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
-if(saved?.idx>=0){ idx=saved.idx; }
+const saved=JSON.parse(localStorage.getItem(KEY)||"null");
+if(saved?.index>=0) i=saved.index;
 render();
 </script>
 </body>

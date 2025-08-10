@@ -6,22 +6,13 @@
 <title>こいのまえ｜恋愛偏差値診断と擬似チャット</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --brand:#f88ca4; --brand-deep:#e8688b; --ink:#222; --sub:#616161; --bg:#fff8fb;
-    --card:#ffffff; --muted:#f1eff4; --ok:#1aa275;
-  }
+  :root{--brand:#f88ca4;--brand-deep:#e8688b;--ink:#222;--sub:#616161;--bg:#fff8fb;--card:#fff}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;font-family:"Noto Sans JP",system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg)}
-  .hero{
-    position:relative;overflow:hidden;color:#1f1a1c;
-    background: radial-gradient(1200px 400px at 50% -200px, #ffe2ec 0%, #fff8fb 58%, #fff 100%);
-    padding:84px 20px 56px; text-align:center;
-  }
-  .badge{
-    display:inline-flex;align-items:center;gap:.5rem;
-    background:linear-gradient(135deg, var(--brand), #ffb2c6);
-    color:#fff;font-weight:700;padding:6px 14px;border-radius:999px;font-size:.9rem;box-shadow:0 6px 18px rgba(248,140,164,.35)
-  }
+  .hero{position:relative;overflow:hidden;padding:92px 20px 56px;text-align:center;background:
+    radial-gradient(1200px 400px at 50% -200px,#ffe2ec 0%,#fff8fb 58%,#fff 100%)}
+  .badge{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--brand),#ffb2c6);
+    color:#fff;font-weight:700;padding:6px 14px;border-radius:999px;font-size:.9rem;box-shadow:0 6px 18px rgba(248,140,164,.35)}
   h1{font-size:clamp(28px,5vw,44px);letter-spacing:.02em;margin:14px 0 8px;font-weight:900}
   .lead{color:#624f55;line-height:1.8;margin:0 auto 18px;max-width:720px}
   .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
@@ -29,37 +20,22 @@
   .btn.primary{background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(248,140,164,.35)}
   .btn.primary:hover{background:var(--brand-deep)}
   .btn.ghost{background:#fff;border:1px solid #eadfe6;color:#333}
-  .ribbon{position:absolute;inset:auto -40px -90px -40px;height:220px;background:
-     radial-gradient(50% 120% at 50% 100%, rgba(248,140,164,.25), transparent 70%)}
-
   .sec{padding:48px 20px}
   .wrap{max-width:1080px;margin:0 auto}
   .cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-  .card{background:var(--card);border:1px solid #efeaf1;border-radius:16px;padding:18px 16px;
-        box-shadow:0 6px 18px rgba(0,0,0,.05)}
+  .card{background:var(--card);border:1px solid #efeaf1;border-radius:16px;padding:18px 16px;box-shadow:0 6px 18px rgba(0,0,0,.05)}
   .card h3{margin:4px 0 8px;font-size:1.1rem}
   .card p{margin:0;color:var(--sub);line-height:1.7}
-
   .steps{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:8px}
   .step{background:#fff;border:1px dashed #eadfe6;border-radius:16px;padding:18px}
-  .step .num{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;
-             background:#ffe1ea;color:#c64e73;font-weight:700;margin-bottom:8px}
+  .step .num{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#ffe1ea;color:#c64e73;font-weight:700;margin-bottom:8px}
   .foot-cta{background:#fff;border-top:1px solid #eee;position:sticky;bottom:0;padding:10px;display:flex;gap:10px;justify-content:center}
-
-  /* miniature “meter” for what users expect in diagnosis apps */
-  .mini-meter{display:inline-flex;gap:4px;margin-left:8px;vertical-align:middle}
-  .mini-meter i{display:inline-block;width:6px;height:12px;border-radius:2px;background:#ffd8e4;opacity:.7}
-  .mini-meter i:nth-child(1){background:#ffe4ec}
-  .mini-meter i:nth-child(2){background:#ffd0dc}
-  .mini-meter i:nth-child(3){background:#ffb5c9}
-  .mini-meter i:nth-child(4){background:#ff9ab5}
-  .mini-meter i:nth-child(5){background:#ff7aa0}
   footer{padding:28px 20px;text-align:center;color:#8a8a8a;font-size:.9rem}
 </style>
 </head>
 <body>
   <section class="hero">
-    <span class="badge">📊 恋愛偏差値診断 <span class="mini-meter"><i></i><i></i><i></i><i></i><i></i></span></span>
+    <span class="badge">📊 恋愛偏差値診断</span>
     <h1>恋愛、はじめる前に。<br>“自分を好きになれる準備”を。</h1>
     <p class="lead">
       <strong>こいのまえ</strong>は、10問の診断と擬似LINEチャットで、<br>
@@ -70,25 +46,15 @@
       <a href="form.html" class="btn primary">▶ 診断をはじめる（約2分）</a>
       <a href="AIchat.html" class="btn ghost">💬 擬似チャットを試す</a>
     </div>
-    <div class="ribbon"></div>
   </section>
 
   <section class="sec">
     <div class="wrap">
       <h2 style="margin:0 0 14px">こいのまえで出来ること</h2>
       <div class="cards">
-        <div class="card">
-          <h3>① 恋愛偏差値とタイプがわかる</h3>
-          <p>診断は全10問。迷い（C）も評価に反映し、“いまの自分の地図”を丁寧に描き出します。</p>
-        </div>
-        <div class="card">
-          <h3>② 擬似LINEで練習できる</h3>
-          <p>相手からの“既読の間”や自然な相づちを再現。言葉にする練習を安全に。</p>
-        </div>
-        <div class="card">
-          <h3>③ 次の一歩が届く</h3>
-          <p>タイプ別に「今週の小さなアクション」を提案。行動変容のハードルを下げます。</p>
-        </div>
+        <div class="card"><h3>① 偏差値とタイプがわかる</h3><p>全10問。迷い（C）も評価に反映し、“いまの自分の地図”を描きます。</p></div>
+        <div class="card"><h3>② 擬似LINEで練習できる</h3><p>既読の“間”や自然な相づちを再現。言葉にする練習を安全に。</p></div>
+        <div class="card"><h3>③ 次の一歩が届く</h3><p>タイプ別に小さなアクションを提案。行動変容のハードルを下げます。</p></div>
       </div>
     </div>
   </section>
@@ -98,21 +64,19 @@
       <h2 style="margin:0 0 14px">使い方はシンプル</h2>
       <div class="steps">
         <div class="step"><div class="num">1</div><strong>10問に回答</strong><br><span class="sub">直感でOK。3択だから迷わない。</span></div>
-        <div class="step"><div class="num">2</div><strong>偏差値＆タイプ表示</strong><br><span class="sub">数字は入口、言葉が本質。</span></div>
-        <div class="step"><div class="num">3</div><strong>擬似チャットで練習</strong><br><span class="sub">“自分の言葉”を増やしていく。</span></div>
+        <div class="step"><div class="num">2</div><strong>擬似チャット</strong><br><span class="sub">自分の言葉を増やす練習。</span></div>
+        <div class="step"><div class="num">3</div><strong>偏差値＆タイプ</strong><br><span class="sub">今日からの小さな一歩が届く。</span></div>
       </div>
-      <div style="text-align:center;margin-top:18px">
-        <a href="form.html" class="btn primary">診断をはじめる</a>
-      </div>
+      <div style="text-align:center;margin-top:18px"><a href="form.html" class="btn primary">診断をはじめる</a></div>
     </div>
   </section>
 
   <div class="foot-cta">
     <a href="form.html" class="btn primary">📊 まずは診断</a>
-    <a href="AIchat.html" class="btn ghost">💬 チャット練習</a>
+    <a href="AIchat.html" class="btn">💬 チャット練習</a>
   </div>
 
-  <footer>© <span id="y"></span> こいのまえ / 開発中デモ</footer>
+  <footer>© <span id="y"></span> こいのまえ / デモ</footer>
 <script>document.getElementById('y').textContent=new Date().getFullYear();</script>
 </body>
 </html>

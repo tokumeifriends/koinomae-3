@@ -1,68 +1,6 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>こいのまえ｜擬似LINEチャット</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-<style>
-  :root{--brand:#f88ca4;--ink:#222;--bg:#fff;--bubble:#f5f5f7;--mine:#dff6ec}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Noto Sans JP",system-ui,-apple-system,sans-serif;background:#fff8fb;color:var(--ink);height:100vh;display:flex;flex-direction:column}
-  header{background:var(--brand);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
-  header .title{font-weight:900}
-  header a{color:#fff;text-decoration:none;opacity:.9}
-  .chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#fff}
-  .row{display:flex;gap:8px;align-items:flex-end}
-  .row.ai{justify-content:flex-start}
-  .row.me{justify-content:flex-end}
-  .bubble{max-width:75%;padding:10px 14px;border-radius:16px;line-height:1.6;box-shadow:0 1px 1px rgba(0,0,0,.03)}
-  .ai .bubble{background:var(--bubble);border-top-left-radius:6px}
-  .me .bubble{background:var(--mine);border-top-right-radius:6px}
-  .name{font-size:.75rem;color:#777;margin-left:38px;margin-top:-6px}
-  .avatar{width:32px;height:32px;border-radius:50%;background:#ffd6e2;display:grid;place-items:center;font-weight:900;color:#b4476b}
-  .input{display:flex;gap:8px;padding:10px;border-top:1px solid #eee;background:#fff}
-  input[type=text]{flex:1;padding:12px 14px;border:1px solid #e7e3ea;border-radius:999px;font-size:1rem}
-  button{appearance:none;border:none;border-radius:999px;background:var(--brand);color:#fff;padding:12px 16px;font-size:1rem}
-  .typing{display:inline-flex;gap:4px}
-  .typing i{width:6px;height:6px;border-radius:50%;background:#bbb;animation:blink 1s infinite}
-  .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
-  @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
-  .top-cta{display:flex;gap:10px}
-  .finish{position:sticky;bottom:0;background:#fff;border-top:1px solid #eee;padding:10px;display:flex;gap:8px;justify-content:center}
-  .ghost{background:#fff;border:1px solid #eadfe6;color:#333}
-</style>
-</head>
-<body>
-<header>
-  <span class="title">あかね</span>
-  <nav class="top-cta">
-    <a href="index.html">ホーム</a>
-    <a href="form.html">診断</a>
-  </nav>
-</header>
-
-<main class="chat" id="chat">
-  <div class="row ai"><div class="avatar">あ</div><div class="bubble">やっほ〜。最近どう？</div></div>
-  <div class="name">あかね</div>
-</main>
-
-<div class="input">
-  <input id="msg" type="text" placeholder="メッセージを入力…" />
-  <button id="send">送信</button>
-</div>
-
-<div class="finish">
-  <button id="scoreBtn" class="ghost">この会話で採点 → 結果へ</button>
-</div>
-
+<!-- 省略：head, style などはそのまま -->
 <script>
-/* ================================
-   1) API接続設定
-   - サーバレス側で /chat と /score を用意（POST）
-   - ない場合は自動でデモモード
-================================ */
-const API_BASE = ""; // 例: "https://your-vercel-app.vercel.app/api"
+const API_BASE = "https://koinomae-api1.onrender.com";
 const DEMO = !API_BASE;
 
 const chatEl = document.getElementById('chat');
@@ -73,7 +11,6 @@ const scoreBtn = document.getElementById('scoreBtn');
 const fillers = ["うん","なるほど〜","たしかに","それは気になる","ふむ…","え、いいじゃん！"];
 function rand(a){return a[Math.floor(Math.random()*a.length)]}
 
-/* 2) 会話履歴（LLM用形式） */
 let history = [
   { role:"system", content:`あなたは大学1年の「あかね」。優しく自然体。日本語。丁寧すぎずため口8割。
 - 既読の“間”はクライアント側で表示されるので短く自然な返事でOK
@@ -83,7 +20,6 @@ let history = [
   { role:"assistant", content:"やっほ〜。最近どう？" }
 ];
 
-/* 3) UI helpers */
 function addMe(text){
   const row = document.createElement('div'); row.className='row me';
   const b = document.createElement('div'); b.className='bubble'; b.textContent=text;
@@ -107,10 +43,8 @@ function typing(on=true){
   }
 }
 
-/* 4) API呼び出し */
 async function callChatAPI(messages){
   if(DEMO){
-    // ルールベースの簡易返信
     const last = messages[messages.length-1]?.content?.toLowerCase()||"";
     let res = rand(fillers);
     if(last.includes("カフェ")||last.includes("coffee")||last.includes("喫茶")) res = "カフェ行きたい！甘いの食べよ🍰";
@@ -129,7 +63,6 @@ async function callChatAPI(messages){
 
 async function callScoreAPI(transcript){
   if(DEMO){
-    // デモの簡易採点（0-100）
     const t = transcript.join("\n").toLowerCase();
     const len = t.length;
     const qmark = (t.match(/\?/g)||[]).length;
@@ -153,12 +86,10 @@ async function callScoreAPI(transcript){
   return await r.json();
 }
 
-/* 5) 送信 */
 async function send(){
   const text = input.value.trim(); if(!text) return;
   addMe(text); input.value="";
   history.push({role:"user", content:text});
-
   typing(true);
   const delay = 800 + Math.random()*900;
   setTimeout(async ()=>{
@@ -171,20 +102,15 @@ async function send(){
 sendBtn.addEventListener('click',send);
 input.addEventListener('keydown',e=>{ if(e.key==="Enter") send(); });
 
-/* 6) 採点→結果へ */
 scoreBtn.addEventListener('click', async ()=>{
-  // 直近10往復程度のテキストを評価
   const lines = history.filter(m=>m.role!=="system").map(m=> (m.role==="user" ? "U: " : "A: ")+m.content);
   const result = await callScoreAPI(lines.slice(-20));
-
-  // 0–100 → 0–20
   const s = result.scores;
   const avg = 0.22*s.initiative + 0.22*s.self_disclosure + 0.20*s.empathy + 0.18*s.clarity + 0.18*s.pace_balance;
   const raw20 = Math.round(avg/5);
   const penalty = Math.min(3, Math.round((s.hesitation||0)/34));
   const chat_raw = Math.max(0, raw20 - penalty);
 
-  // 保存して result.html へ
   const data = JSON.parse(localStorage.getItem("KOI_V3")||"{}");
   localStorage.setItem("KOI_V3", JSON.stringify({
     ...data,
@@ -197,5 +123,3 @@ scoreBtn.addEventListener('click', async ()=>{
   location.href="result.html";
 });
 </script>
-</body>
-</html>

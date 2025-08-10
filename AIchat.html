@@ -29,6 +29,8 @@
   .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
   @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
   .top-cta{display:flex;gap:10px}
+  .finish{position:sticky;bottom:0;background:#fff;border-top:1px solid #eee;padding:10px;display:flex;gap:8px;justify-content:center}
+  .ghost{background:#fff;border:1px solid #eadfe6;color:#333}
 </style>
 </head>
 <body>
@@ -41,10 +43,7 @@
 </header>
 
 <main class="chat" id="chat">
-  <div class="row ai">
-    <div class="avatar">あ</div>
-    <div class="bubble">最近どう？テスト終わった？</div>
-  </div>
+  <div class="row ai"><div class="avatar">あ</div><div class="bubble">やっほ〜。最近どう？</div></div>
   <div class="name">あかね</div>
 </main>
 
@@ -53,66 +52,150 @@
   <button id="send">送信</button>
 </div>
 
+<div class="finish">
+  <button id="scoreBtn" class="ghost">この会話で採点 → 結果へ</button>
+</div>
+
 <script>
-const chat = document.getElementById('chat');
+/* ================================
+   1) API接続設定
+   - サーバレス側で /chat と /score を用意（POST）
+   - ない場合は自動でデモモード
+================================ */
+const API_BASE = ""; // 例: "https://your-vercel-app.vercel.app/api"
+const DEMO = !API_BASE;
+
+const chatEl = document.getElementById('chat');
 const input = document.getElementById('msg');
 const sendBtn = document.getElementById('send');
+const scoreBtn = document.getElementById('scoreBtn');
 
 const fillers = ["うん","なるほど〜","たしかに","それは気になる","ふむ…","え、いいじゃん！"];
-function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
 
+/* 2) 会話履歴（LLM用形式） */
+let history = [
+  { role:"system", content:`あなたは大学1年の「あかね」。優しく自然体。日本語。丁寧すぎずため口8割。
+- 既読の“間”はクライアント側で表示されるので短く自然な返事でOK
+- 10〜50字で、相手の感情に寄り添う。質問を時々混ぜる
+- NG: 個人情報要求/露骨/攻撃/オフライン誘導
+`},
+  { role:"assistant", content:"やっほ〜。最近どう？" }
+];
+
+/* 3) UI helpers */
 function addMe(text){
   const row = document.createElement('div'); row.className='row me';
   const b = document.createElement('div'); b.className='bubble'; b.textContent=text;
-  row.appendChild(b); chat.appendChild(row);
-  chat.scrollTop = chat.scrollHeight;
+  row.appendChild(b); chatEl.appendChild(row); chatEl.scrollTop = chatEl.scrollHeight;
 }
 function addAi(text){
   const row = document.createElement('div'); row.className='row ai';
   const av = document.createElement('div'); av.className='avatar'; av.textContent='あ';
   const b = document.createElement('div'); b.className='bubble'; b.textContent=text;
-  row.appendChild(av); row.appendChild(b); chat.appendChild(row);
+  row.appendChild(av); row.appendChild(b); chatEl.appendChild(row);
   const nm = document.createElement('div'); nm.className='name'; nm.textContent='あかね';
-  chat.appendChild(nm);
-  chat.scrollTop = chat.scrollHeight;
+  chatEl.appendChild(nm); chatEl.scrollTop = chatEl.scrollHeight;
 }
-
 function typing(on=true){
   if(on){
     const row = document.createElement('div'); row.className='row ai'; row.dataset.typing='1';
     row.innerHTML = `<div class="avatar">あ</div><div class="bubble"><span class="typing"><i></i><i></i><i></i></span></div>`;
-    chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
+    chatEl.appendChild(row); chatEl.scrollTop=chatEl.scrollHeight;
   }else{
-    const t = chat.querySelector('[data-typing]'); if(t) t.remove();
+    const t = chatEl.querySelector('[data-typing]'); if(t) t.remove();
   }
 }
 
-function reply(user){
-  const t = user.toLowerCase();
-  // 既読までの“間”
-  typing(true);
-  const delay = 900 + Math.random()*900;
-  setTimeout(()=>{
-    typing(false);
+/* 4) API呼び出し */
+async function callChatAPI(messages){
+  if(DEMO){
+    // ルールベースの簡易返信
+    const last = messages[messages.length-1]?.content?.toLowerCase()||"";
     let res = rand(fillers);
-    if(t.includes("カフェ")||t.includes("coffee")||t.includes("喫茶")) res = "カフェ行きたい！甘いの食べよ🍰";
-    else if(t.includes("映画")||t.includes("ムービー")) res = "映画いいね、何観たい？";
-    else if(t.includes("ひま")||t.includes("暇")) res = "実は私も…散歩でもする？";
-    else if(t.includes("ごめん")||t.includes("遅れて")) res = "全然大丈夫だよ〜気にしないで！";
-    else if(t.includes("好き")||t.includes("気になってる")) res = "え、ちょっとドキドキする…どうしよう😳";
-    addAi(res);
-  }, delay);
+    if(last.includes("カフェ")||last.includes("coffee")||last.includes("喫茶")) res = "カフェ行きたい！甘いの食べよ🍰";
+    else if(last.includes("映画")||last.includes("ムービー")) res = "映画いいね、何観たい？";
+    else if(last.includes("ひま")||last.includes("暇")) res = "実は私も…散歩でもする？";
+    else if(last.includes("ごめん")||last.includes("遅れて")) res = "全然大丈夫だよ〜気にしないで！";
+    else if(last.includes("好き")||last.includes("気になってる")) res = "え、ちょっとドキドキする…どうしよう😳";
+    return res;
+  }
+  const r = await fetch(`${API_BASE}/chat`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ messages })
+  });
+  const j = await r.json(); return j.reply;
 }
 
-function send(){
-  const text = input.value.trim();
-  if(!text) return;
-  addMe(text);
-  input.value="";
-  reply(text);
+async function callScoreAPI(transcript){
+  if(DEMO){
+    // デモの簡易採点（0-100）
+    const t = transcript.join("\n").toLowerCase();
+    const len = t.length;
+    const qmark = (t.match(/\?/g)||[]).length;
+    const sorry = (t.match(/ごめん|すみません/g)||[]).length;
+    const emotion = (t.match(/嬉|楽|緊張|ドキドキ|好き/g)||[]).length;
+
+    const scores = {
+      initiative: Math.min(100, 20 + len/8),
+      self_disclosure: Math.min(100, 20 + emotion*20),
+      empathy: Math.min(100, 30 + qmark*10),
+      clarity: Math.min(100, 50),
+      pace_balance: 60,
+      hesitation: Math.min(100, sorry*25)
+    };
+    return { scores, flags:{safety:false}, suggestion:"短くても自分の気持ちを一言添えてみよう。" };
+  }
+  const r = await fetch(`${API_BASE}/score`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ transcript: transcript.join("\n") })
+  });
+  return await r.json();
+}
+
+/* 5) 送信 */
+async function send(){
+  const text = input.value.trim(); if(!text) return;
+  addMe(text); input.value="";
+  history.push({role:"user", content:text});
+
+  typing(true);
+  const delay = 800 + Math.random()*900;
+  setTimeout(async ()=>{
+    const reply = await callChatAPI(history);
+    typing(false);
+    addAi(reply);
+    history.push({role:"assistant", content:reply});
+  }, delay);
 }
 sendBtn.addEventListener('click',send);
 input.addEventListener('keydown',e=>{ if(e.key==="Enter") send(); });
+
+/* 6) 採点→結果へ */
+scoreBtn.addEventListener('click', async ()=>{
+  // 直近10往復程度のテキストを評価
+  const lines = history.filter(m=>m.role!=="system").map(m=> (m.role==="user" ? "U: " : "A: ")+m.content);
+  const result = await callScoreAPI(lines.slice(-20));
+
+  // 0–100 → 0–20
+  const s = result.scores;
+  const avg = 0.22*s.initiative + 0.22*s.self_disclosure + 0.20*s.empathy + 0.18*s.clarity + 0.18*s.pace_balance;
+  const raw20 = Math.round(avg/5);
+  const penalty = Math.min(3, Math.round((s.hesitation||0)/34));
+  const chat_raw = Math.max(0, raw20 - penalty);
+
+  // 保存して result.html へ
+  const data = JSON.parse(localStorage.getItem("KOI_V3")||"{}");
+  localStorage.setItem("KOI_V3", JSON.stringify({
+    ...data,
+    chat_history: history,
+    chat_scores: s,
+    chat_raw20: chat_raw,
+    chat_suggestion: result.suggestion||"",
+    safety: result.flags?.safety||false
+  }));
+  location.href="result.html";
+});
 </script>
 </body>
 </html>

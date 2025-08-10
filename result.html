@@ -39,6 +39,7 @@
     <div id="type" class="type">あなたは「—」タイプ</div>
     <div id="desc" class="p"></div>
     <div id="note" class="p" style="color:#666"></div>
+    <div id="chatSug" class="p" style="color:#444"></div>
 
     <div class="tips">
       <div class="tip" id="tip1"></div>
@@ -46,47 +47,75 @@
     </div>
 
     <div class="cta">
-      <a class="btn primary" href="AIchat.html">💬 擬似チャットで練習する</a>
-      <a class="btn ghost" href="form.html">もう一度診断</a>
+      <a class="btn primary" href="AIchat.html">💬 もう少し練習する</a>
+      <a class="btn ghost" href="form.html">診断やり直し</a>
+      <a class="btn ghost" href="index.html">ホーム</a>
     </div>
   </div>
 </main>
 <footer>© <span id="y"></span> こいのまえ / デモ</footer>
 
 <script>
-const p = new URLSearchParams(location.search);
-const score = Number(p.get("score")) || 55;
-const type = decodeURIComponent(p.get("type")||"") || "影の共感ナビゲーター";
-const cCount = Number(p.get("c")||0);
-
 document.getElementById('y').textContent=new Date().getFullYear();
-document.getElementById('score').textContent = score;
-document.getElementById('bar').style.width = Math.min(Math.max((score-40)/(70-40),0),1)*100 + "%";
+const data = JSON.parse(localStorage.getItem("KOI_V3")||"{}");
+const answers = data.answers||[];
+const quiz_raw = data.quiz_raw||0;      // 0-20
+const quiz_scaled = data.quiz_scaled||55;
+const cCount = data.cCount||0;
+const chat_raw20 = data.chat_raw20 ?? 10; // 0-20（デモ既定）
+const chat_scores = data.chat_scores||{initiative:50,self_disclosure:50,empathy:50,clarity:50,pace_balance:50,hesitation:30};
+const suggestion = data.chat_suggestion||"まずは短くても“自分の気持ち”を一言添えてみよう。";
+
+// 最終偏差値（40–70）：診断60% + チャット40%
+const finalScaled = 40 + Math.round(30 * (0.6*(quiz_raw/20) + 0.4*(chat_raw20/20)));
+document.getElementById('score').textContent = finalScaled;
+document.getElementById('bar').style.width = Math.min(Math.max((finalScaled-40)/(70-40),0),1)*100 + "%";
+
+// タイプ判定（診断＋チャット）
+function decideType(answers, chat){
+  const map={}; answers.forEach((v,i)=>map["q"+(i+1)]=v);
+  const keys=["q1","q4","q6","q8"];
+  let cautious=0, breakthrough=0;
+  keys.forEach(k=>{ if(map[k]==="A") cautious++; if(map[k]==="B") breakthrough++; });
+
+  // チャットで補正
+  if((chat.initiative||0) + (chat.self_disclosure||0) > 130) breakthrough++;
+  if((chat.empathy||0) > 70) cautious++; // 配慮＝慎重側の傾向加点
+  if((chat.hesitation||0) > 60) cautious++;
+
+  if(cCount>=5) return "迷える子羊";
+  if(breakthrough - cautious >= 2){
+    if(map.q9==="B" || map.q5==="B") return "感情ジェットブースター";
+    if(map.q2==="B" || map.q7==="B") return "ロマンチスト型リアクター";
+    return "感情ジェットブースター";
+  }
+  if(cautious - breakthrough >= 2){
+    if(map.q3==="A" || map.q4==="A" || map.q9==="A") return "影の共感ナビゲーター";
+    return "理屈優位の静かな戦略家";
+  }
+  if((map.q2==="A" && map.q4==="A") || map.q6==="A") return "理屈優位の静かな戦略家";
+  if(map.q3==="A" || map.q9==="A") return "影の共感ナビゲーター";
+  if(((chat.initiative||0)+(chat.self_disclosure||0))>120) return "ロマンチスト型リアクター";
+  return "理屈優位の静かな戦略家";
+}
+
+const type = decideType(answers, chat_scores);
 document.getElementById('type').textContent = `あなたは「${type}」タイプ`;
 
 const copy = {
-  "影の共感ナビゲーター": `
-    あなたは、<span class="hl">他人の感情の微細な変化に気づける人</span>。その優しさは大きな強み。<br>
-    一方で、<span class="hl">自分の気持ちを後回しにしがち</span>。今日は「これだけは伝える」を一言で。`,
-  "理屈優位の静かな戦略家": `
-    あなたは、<span class="hl">状況整理と準備が得意</span>。相手を尊重する姿勢が好印象。<br>
-    ただし、<span class="hl">考えすぎでタイミングを逃す</span>ことも。70点で出していこう。`,
-  "ロマンチスト型リアクター": `
-    あなたは、<span class="hl">感受性が豊かで瞬発力が武器</span>。熱量が魅力。<br>
-    ときに、<span class="hl">相手のペースを置き去り</span>に。半歩ゆっくりを意識。`,
-  "感情ジェットブースター": `
-    あなたは、<span class="hl">行動力と素直さ</span>が強み。恋愛の“始動”が得意。<br>
-    ただ、<span class="hl">早さが誤解</span>を生むことも。小さな確認を挟もう。`,
-  "迷える子羊": `
-    あなたは、<span class="hl">恋愛スタイルを模索中</span>。それは“弱さ”でなく“伸びしろ”。<br>
-    安心できる場から練習を始めよう。`
+  "影の共感ナビゲーター": `あなたは、<span class="hl">他人の感情の微細な変化に気づける人</span>。その優しさは大きな強み。<br>一方で、<span class="hl">自分の気持ちを後回しにしがち</span>。今日は「これだけは伝える」を一言で。`,
+  "理屈優位の静かな戦略家": `あなたは、<span class="hl">状況整理と準備が得意</span>。相手を尊重する姿勢が好印象。<br>ただし、<span class="hl">考えすぎでタイミングを逃す</span>ことも。70点で出していこう。`,
+  "ロマンチスト型リアクター": `あなたは、<span class="hl">感受性が豊かで瞬発力が武器</span>。熱量が魅力。<br>ときに、<span class="hl">相手のペースを置き去り</span>に。半歩ゆっくりを意識。`,
+  "感情ジェットブースター": `あなたは、<span class="hl">行動力と素直さ</span>が強み。恋愛の“始動”が得意。<br>ただ、<span class="hl">早さが誤解</span>を生むことも。小さな確認を挟もう。`,
+  "迷える子羊": `あなたは、<span class="hl">恋愛スタイルを模索中</span>。それは“弱さ”でなく“伸びしろ”。<br>安心できる場から練習を始めよう。`
 };
 document.getElementById('desc').innerHTML = copy[type] || copy["理屈優位の静かな戦略家"];
 if(cCount>=5){
   document.getElementById('note').innerHTML = "<strong>補足：</strong>「どちらとも言えない」が多めでした。今は“探している途中”。少しずつ自分の言葉を増やしていきましょう。";
 }
+// LLMが返した次の一歩
+document.getElementById('chatSug').innerHTML = `<strong>会話からの提案：</strong>${suggestion}`;
 
-// 小さなアクション提案（タイプ別）
 const tips = {
   "影の共感ナビゲーター":[
     "LINEの締めに「今日はここが良かった」を一言添える。",
